@@ -26,10 +26,10 @@ ABeetle::ABeetle()
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 	//Rotation
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = true;
 	bUseControllerRotationRoll = false;
-	
+
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
@@ -38,11 +38,10 @@ void ABeetle::BeginPlay()
 {
 	Super::BeginPlay();
 	//Movement
-	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = 1000.f;
 	GetCharacterMovement()->MaxAcceleration = 100.f;
 	GetCharacterMovement()->GroundFriction = 1.0f;
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 360.0f, 0.0f);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 180.0f, 0.0f);
 	GetCharacterMovement()->AirControl = 0.2;
 	GetCharacterMovement()->GravityScale = 10;
 	//Controller Setup
@@ -63,7 +62,6 @@ void ABeetle::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	Movement();
-	
 }
 
 // Called to bind functionality to input
@@ -127,6 +125,7 @@ void ABeetle::Movement()
 	//Getting the direction we're looking, and the right vector = cross product of forward and up vectors
 	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(ControlRotation);
 	FVector RightVector = UKismetMathLibrary::GetRightVector(ControlRotation);
+
 	ForwardVector *= 1;
 	RightVector *= YInput;
 
