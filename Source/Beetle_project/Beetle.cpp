@@ -196,7 +196,7 @@ void ABeetle::OnHit()
 
 void ABeetle::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->IsA<ATestActor>())
+	if (OtherActor->IsA<UStaticMeshComponent>())
 	{
 		FVector Speed = GetCharacterMovement()->Velocity;
 		LaunchCharacter(Speed * -5, false, false);
