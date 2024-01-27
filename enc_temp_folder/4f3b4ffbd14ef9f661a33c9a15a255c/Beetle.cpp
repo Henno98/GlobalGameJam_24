@@ -18,9 +18,6 @@ ABeetle::ABeetle()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-	MeshComponent->SetupAttachment(GetRootComponent());
 	//Springarm
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Springarm"));
 	SpringArm->SetupAttachment(GetRootComponent());
@@ -31,7 +28,8 @@ ABeetle::ABeetle()
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 	//Rotation
-	
+	Collider = CreateDefaultSubobject<USphereComponent>(TEXT("Collider"));
+	Collider->SetupAttachment(RootComponent);
 
 
 	bUseControllerRotationYaw = false;
@@ -167,17 +165,6 @@ void ABeetle::Movement()
 		AddMovementInput(RightVector);
 
 	}
-}
-
-void ABeetle::Bite(const FInputActionValue& input)
-{
-	
-
-
-}
-
-void ABeetle::AttachHeadMesh(USkeletalMesh* NewHeadMesh)
-{
 }
 
 void ABeetle::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
