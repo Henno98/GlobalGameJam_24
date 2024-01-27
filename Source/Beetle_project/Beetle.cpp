@@ -11,6 +11,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NiagaraSystem.h"
+#include "TestActor.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
@@ -19,8 +21,6 @@ ABeetle::ABeetle()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-	MeshComponent->SetupAttachment(GetRootComponent());
 	//Springarm
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Springarm"));
 	SpringArm->SetupAttachment(GetRootComponent());
@@ -31,7 +31,10 @@ ABeetle::ABeetle()
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 	//Rotation
-	
+	Collider = CreateDefaultSubobject<USphereComponent>(TEXT("BiteHitBox"));
+	Collider->SetupAttachment(GetRootComponent());
+	Collider->InitSphereRadius(20.f);
+	Collider->AddLocalOffset(FVector(80, 30, -60));
 
 
 	bUseControllerRotationYaw = false;
@@ -53,6 +56,8 @@ void ABeetle::BeginPlay()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 180.0f, 0.0f);
 	GetCharacterMovement()->AirControl = 0.2;
 	GetCharacterMovement()->GravityScale = 10;
+	SetActorEnableCollision(true);
+	Collider->OnComponentBeginOverlap.AddDynamic(this, &ABeetle::OnOverlap);
 	//Controller Setup
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	if (PlayerController)
@@ -90,7 +95,8 @@ void ABeetle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhanceInputCom->BindAction(RightInput, ETriggerEvent::Triggered, this, &ABeetle::Right);
 		EnhanceInputCom->BindAction(ForwardInput, ETriggerEvent::Completed, this, &ABeetle::Forward);
 		EnhanceInputCom->BindAction(RightInput, ETriggerEvent::Completed, this, &ABeetle::Right);
-	
+
+		EnhanceInputCom->BindAction(ForwardInput, ETriggerEvent::Completed, this, &ABeetle::Bite);
 		EnhanceInputCom->BindAction(SpecialInput, ETriggerEvent::Completed, this, &ABeetle::Special);
 	}
 }
@@ -171,19 +177,30 @@ void ABeetle::Movement()
 
 void ABeetle::Bite(const FInputActionValue& input)
 {
-	
-
+	LaunchCharacter(FVector(0, 0, 1000), false, false);
+	UE_LOG(LogClass, Log, TEXT("Bite"));
 
 }
 
-void ABeetle::AttachHeadMesh(USkeletalMesh* NewHeadMesh)
+void ABeetle::AttachHeadMesh(USkeletalMeshComponent* NewHeadMesh)
 {
+	
+}
+
+void ABeetle::OnHit()
+{
+	FVector Speed = GetCharacterMovement()->Velocity;
+	LaunchCharacter(Speed * -1, false, false);
+	UE_LOG(LogClass, Log, TEXT("CollideFace"));
 }
 
 void ABeetle::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	FVector Speed = GetCharacterMovement()->Velocity;
-	LaunchCharacter(Speed * -1, false, false);
+	if (OtherActor->IsA<ATestActor>())
+	{
+		FVector Speed = GetCharacterMovement()->Velocity;
+		LaunchCharacter(Speed * -5, false, false);
+	}
 
 }
 

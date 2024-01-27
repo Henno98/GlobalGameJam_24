@@ -30,9 +30,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerVariables")
-	class USkeletalMeshComponent* MeshComponent;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerVariables")
 	class USphereComponent* Collider{ nullptr };
 
@@ -49,6 +47,14 @@ public:
 	float Roll;
 	float Pitch;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Part Stats")
+	float BiteLength;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Part Stats")
+	float MaxSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Part Stats")
+	float Bounce;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Part Stats")
+	float FlightLength;
 
 	//Input Mapping setup
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = InputSystem)
@@ -84,8 +90,10 @@ public:
 
 	void Bite(const FInputActionValue& input);
 
-	void AttachHeadMesh(USkeletalMesh* NewHeadMesh);
-	
+	void AttachHeadMesh(USkeletalMeshComponent* NewHeadMesh);
+
+	void OnHit();
+	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult);
