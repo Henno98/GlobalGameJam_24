@@ -1,14 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Beetle.generated.h"
 
 
 struct FInputActionValue;
-
 class UInputAction;
 class UNiagaraSystem;
 class UNiagaraComponent;
@@ -32,6 +30,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerVariables")
+	class USphereComponent* Collider{ nullptr };
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerVariables")
 	class USpringArmComponent* SpringArm{ nullptr };
 
@@ -77,5 +79,8 @@ public:
 	void MouseY(const FInputActionValue& input);
 	void Special();
 	void Movement();
-	
+
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
 };

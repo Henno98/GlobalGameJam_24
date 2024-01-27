@@ -2,8 +2,10 @@
 
 
 #include "Beetle.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/SphereComponent.h"
 #include "InputMappingContext.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -16,8 +18,12 @@ ABeetle::ABeetle()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	Collider = CreateDefaultSubobject<USphereComponent>(TEXT("Collider"));
+	Collider->SetupAttachment(GetRootComponent());
+	Collider->InitSphereRadius(20.f);
+	Collider->OnComponentBeginOverlap.AddDynamic(this, &ABeetle::OnOverlap);
 	//Springarm
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Springarm"));
 	SpringArm->SetupAttachment(GetRootComponent());
 	SpringArm->TargetArmLength = 400.f; // Distance from player
 	SpringArm->bUsePawnControlRotation = false; // Rotate arm based on controller
@@ -38,11 +44,11 @@ void ABeetle::BeginPlay()
 {
 	Super::BeginPlay();
 	//Movement
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed = 1000.f;
 	GetCharacterMovement()->MaxAcceleration = 100.f;
 	GetCharacterMovement()->GroundFriction = 1.0f;
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 360.0f, 0.0f);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 180.0f, 0.0f);
 	GetCharacterMovement()->AirControl = 0.2;
 	GetCharacterMovement()->GravityScale = 10;
 	//Controller Setup
@@ -63,6 +69,12 @@ void ABeetle::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	Movement();
+
+	FRotator NewRotation = GetActorRotation();
+	NewRotation.Yaw += YInput * 3.f;
+
+	// Set the new rotation
+	SetActorRotation(NewRotation);
 	
 }
 
@@ -76,15 +88,7 @@ void ABeetle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		EnhanceInputCom->BindAction(RightInput, ETriggerEvent::Triggered, this, &ABeetle::Right);
 		EnhanceInputCom->BindAction(ForwardInput, ETriggerEvent::Completed, this, &ABeetle::Forward);
 		EnhanceInputCom->BindAction(RightInput, ETriggerEvent::Completed, this, &ABeetle::Right);
-
-		EnhanceInputCom->BindAction(MouseXInput, ETriggerEvent::Started, this, &ABeetle::MouseX);
-		EnhanceInputCom->BindAction(MouseYInput, ETriggerEvent::Started, this, &ABeetle::MouseY);
-		EnhanceInputCom->BindAction(MouseXInput, ETriggerEvent::Triggered, this, &ABeetle::MouseX);
-		EnhanceInputCom->BindAction(MouseYInput, ETriggerEvent::Triggered, this, &ABeetle::MouseY);
-		EnhanceInputCom->BindAction(MouseXInput, ETriggerEvent::Completed, this, &ABeetle::MouseX);
-		EnhanceInputCom->BindAction(MouseYInput, ETriggerEvent::Completed, this, &ABeetle::MouseY);
-
-		
+	
 		EnhanceInputCom->BindAction(SpecialInput, ETriggerEvent::Completed, this, &ABeetle::Special);
 	}
 }
@@ -114,6 +118,28 @@ void ABeetle::Special()
 	FVector Speed = GetCharacterMovement()->Velocity;
 	LaunchCharacter(Speed * 1.5, true, false);
 }
+//void ABeetle::Move(const FInputActionValue& Value)
+//{
+//	// input is a Vector2D
+//	FVector2D MovementVector = Value.Get<FVector2D>();
+//
+//	if (Controller != nullptr)
+//	{
+//		// find out which way is forward
+//		const FRotator Rotation = Controller->GetControlRotation();
+//		const FRotator YawRotation(0, Rotation.Yaw, 0);
+//
+//		// get forward vector
+//		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+//
+//		// get right vector 
+//		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+//
+//		// add movement 
+//		AddMovementInput(ForwardDirection, MovementVector.Y);
+//		AddMovementInput(RightDirection, MovementVector.X);
+//	}
+//}
 
 void ABeetle::Movement()
 {
@@ -125,13 +151,13 @@ void ABeetle::Movement()
 	/*ControlRotation.Yaw = 0.f;*/
 
 	//Getting the direction we're looking, and the right vector = cross product of forward and up vectors
-	FVector ForwardVector = UKismetMathLibrary::GetForwardVector(ControlRotation);
+	
 	FVector RightVector = UKismetMathLibrary::GetRightVector(ControlRotation);
-	ForwardVector *= 1;
+	
 	RightVector *= YInput;
 
-
-	AddMovementInput(ForwardVector);
+	
+	AddMovementInput(GetActorForwardVector(), 1.0f);
 
 
 	if (!FMath::IsNearlyZero(YInput))
@@ -139,5 +165,12 @@ void ABeetle::Movement()
 		AddMovementInput(RightVector);
 
 	}
+}
+
+void ABeetle::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	FVector Speed = GetCharacterMovement()->Velocity;
+	LaunchCharacter(Speed * -1, false, false);
+
 }
 
