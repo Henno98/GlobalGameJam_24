@@ -144,11 +144,11 @@ void ABeetle::SetGamePaused(bool bIsPaused)
 	APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
 	if (MyPlayer != NULL)
 	{
-		MyPlayer->SetPause(bIsPaused);
+		//MyPlayer->SetPause(bIsPaused);
 	}
 
 	if (GameWon == false || GameOver == false) return;
-	GamePaused = true;
+	//GamePaused = true;
 }
 //void ABeetle::Move(const FInputActionValue& Value)
 //{
