@@ -6,7 +6,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/SphereComponent.h"
-#include "InputMappingContext.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -14,6 +13,9 @@
 #include "NiagaraSystem.h"
 #include "TestActor.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "InputTriggers.h"
+#include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABeetle::ABeetle()
@@ -50,7 +52,7 @@ void ABeetle::BeginPlay()
 	Super::BeginPlay();
 	//Movement
 	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+	GetCharacterMovement()->MaxWalkSpeed = 1500.f;
 	GetCharacterMovement()->MaxAcceleration = 100.f;
 	GetCharacterMovement()->GroundFriction = 1.0f;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 180.0f, 0.0f);
@@ -58,6 +60,9 @@ void ABeetle::BeginPlay()
 	GetCharacterMovement()->GravityScale = 10;
 	SetActorEnableCollision(true);
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &ABeetle::OnOverlap);
+
+	//Setup
+	bHasGameStarted = false;
 	//Controller Setup
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	if (PlayerController)
@@ -124,7 +129,26 @@ void ABeetle::MouseY(const FInputActionValue& input)
 void ABeetle::Special()
 {
 	FVector Speed = GetCharacterMovement()->Velocity;
+	LaunchCharacter(FVector(0, 0, 1000), false, false);
 	LaunchCharacter(Speed * 1.5, true, false);
+}
+
+void ABeetle::GameStateChange()
+{
+	GameWon = true;
+	SetGamePaused(true);
+}
+
+void ABeetle::SetGamePaused(bool bIsPaused)
+{
+	APlayerController* const MyPlayer = Cast<APlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
+	if (MyPlayer != NULL)
+	{
+		MyPlayer->SetPause(bIsPaused);
+	}
+
+	if (GameWon == false || GameOver == false) return;
+	GamePaused = true;
 }
 //void ABeetle::Move(const FInputActionValue& Value)
 //{

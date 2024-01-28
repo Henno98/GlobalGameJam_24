@@ -87,14 +87,32 @@ public:
 	void MouseY(const FInputActionValue& input);
 	void Special();
 	void Movement();
-
+	void GameStateChange();
 	void Bite(const FInputActionValue& input);
 
 	void AttachHeadMesh(USkeletalMeshComponent* NewHeadMesh);
-
+	void SetGamePaused(bool bIsPaused);
 	void OnHit();
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameState)
+	bool GameOver = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameState)
+	bool ShowSettings = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameState)
+	bool GameWon = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameState)
+	bool GamePaused = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameState)
+	bool IsPaused;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameState)
+	bool bHasGameStarted;
 };
